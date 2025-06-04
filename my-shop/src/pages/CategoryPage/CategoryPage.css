@@ -1,0 +1,19 @@
+.category-page {
+  padding: 100px 5% 40px;
+  min-height: 100vh;
+  background: #f8f9fa; /* Серый фон вместо белого */
+}
+
+.category-header {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.products-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}

@@ -1,0 +1,97 @@
+.account-page {
+  padding-top: 80px; /* Высота хедера */
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.account-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  color: #333;
+}
+
+.account-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.account-tabs {
+  margin: 0 auto 30px;
+  max-width: 500px;
+  display: flex;
+  justify-content: center; /* Центрируем вкладки */
+  border-bottom: 1px solid #eee;
+  margin-bottom: 30px;
+  gap: 20px; /* Равномерное расстояние */
+}
+
+.account-tab {
+  padding: 12px 24px;
+  color: #666;
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  transform: translateY(0);
+  transition: transform 0.2s ease;
+}
+
+.account-tab:not(.active-tab):hover {
+  color: #ff6b81; /* Розоватый оттенок */
+}
+
+.active-tab {
+  color: #ff4757;
+  font-weight: 600;
+}
+
+.active-tab::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #ff4757;
+}
+
+.active-tab:hover {
+  color: #b73515; /* Темно-красный */
+  transform: translateY(-2px);
+}
+
+.profile-field {
+  margin-bottom: 20px;
+}
+
+.profile-field label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #666;
+}
+
+.profile-field p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table th, .orders-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.orders-table th {
+  font-weight: 500;
+  color: #666;
+}

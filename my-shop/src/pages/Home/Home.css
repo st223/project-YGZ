@@ -1,0 +1,38 @@
+main {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 5%;
+    flex-grow: 1;
+}
+
+@media (max-width: 768) {
+    .header {
+        padding: 1rem 3%;
+    }
+
+    nav {
+        gap: 1rem;
+    }
+}
+
+.home-page {
+  padding: 100px 5% 40px;
+  min-height: 100vh;
+  background: #f8f9fa; /* Согласованный фон */
+}
+
+.catalog-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  color: #333;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 30px auto 0;
+}

@@ -1,0 +1,142 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 80px;
+  padding: 0 5%;
+  background: #1f1f1f;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.logo {
+  font-size: 2.5rem;
+  font-weight: 800;
+  font-family: 'Germania One', cursive;
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  line-height: 1;
+}
+
+.logo-part-1 {
+  color: white;
+}
+
+.logo-part-2 {
+  color: #ff4757;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Общие стили для всех кнопок навигации */
+.nav-link {
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Стиль для активной кнопки */
+.nav-link.active-link {
+  background: white;
+  color: #333;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Подчёркивание для активной кнопки */
+.nav-link.active-link::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 3px;
+  background: #ff4757;
+  border-radius: 3px;
+}
+
+/* Ховер-эффект */
+.nav-link:hover {
+  color: #ff4757;
+}
+
+/* Подчеркивание при наведении (для неактивных) */
+.nav-link:not(.active-link):hover {
+  color: #ff4757;
+}
+
+.nav-link:not(.active-link):hover::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #ff4757;
+  animation: underline 0.3s ease;
+}
+
+/* Убираем подчёркивание при ховере для активной кнопки */
+.nav-link.active-link:hover::after {
+  display: none;
+}
+
+.nav-link svg {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  color: white;
+}
+
+.nav-link:hover svg {
+  color: #ff4757;
+}
+
+.nav-link.active-link svg {
+  color: #333;
+}
+
+/* Стиль для счетчика корзины */
+.cart-count {
+  background: #ff4757;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+@keyframes underline {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.cart-count {
+  animation: bounce 0.3s ease;
+}
