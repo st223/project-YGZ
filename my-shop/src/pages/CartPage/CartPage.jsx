@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header/Header';
+import axios from 'axios';
 import './CartPage.css';
 
 export function CartPage() {
@@ -34,14 +35,14 @@ export function CartPage() {
     setLocalError(null);
     
     try {
-      const response = await axios.post('/api/orders', {
+      const response = await axios.post('http://localhost:5000/api/cart', {
         items: cart.map(item => ({
           productId: item.id,
           quantity: item.quantity,
           price: item.price
         })),
         totalAmount: total
-      });
+      }, { withCredentials: true });
 
       await clearCart();
       setOrderNumber(response.data.orderNumber);
@@ -97,7 +98,6 @@ export function CartPage() {
                   <img src={item.image} alt={item.name} className="cart-item-image" />
                   <div className="cart-item-details">
                     <h3 className="cart-item-name">{item.name}</h3>
-                    <p className="cart-item-specs">{item.specs}</p>
                     <p className="cart-item-price">
                       {item.price.toLocaleString()} ₽ × {item.quantity} = 
                       <span className="item-total">
@@ -136,7 +136,7 @@ export function CartPage() {
               </div>
               <button 
                 onClick={handleCheckout}
-                disabled={isProcessing}
+                disabled={isProcessing || cart.length === 0}
                 className={`checkout-button ${bounce ? 'bounce-effect' : ''}`}
               >
                 {isProcessing ? 'Оформление...' : 'Оформить заказ'}
@@ -162,4 +162,4 @@ export function CartPage() {
       </div>
     </>
   );
-}
+} 

@@ -7,6 +7,7 @@ import { ProfileTab } from './pages/Account/ProfileTab';
 import { OrdersTab } from './pages/Account/OrdersTab';
 import { LoginForm } from './components/LoginForm';
 import { RegisterForm } from './components/RegisterForm';
+import { AdminPanel } from './components/AdminPanel/AdminPanel';
 import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           </Route>
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -8,18 +8,21 @@ export function CartProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [bounce, setBounce] = useState(false);
+  const [cartId, setCartId] = useState(null); // Добавляем cartId в состояние
 
-  // Загрузка корзины с сервера при монтировании
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
+  // Загрузка корзины с сервера
   const fetchCart = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/cart');
+      const response = await axios.get('http://localhost:5000/api/cart', {
+        headers: cartId ? { 'x-cart-id': cartId } : {} // Отправляем cartId если есть
+      });
       setCart(response.data.items || []);
+      // Сохраняем cartId из ответа (для гостей)
+      if (response.data.cartId) {
+        setCartId(response.data.cartId);
+      }
     } catch (err) {
       console.error('Ошибка загрузки корзины:', err);
       setError('Не удалось загрузить корзину');
@@ -29,7 +32,11 @@ export function CartProvider({ children }) {
     }
   };
 
-  // Эффект для анимации bounce
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  // Анимация
   useEffect(() => {
     if (cart.length > 0) {
       setBounce(true);
@@ -38,40 +45,61 @@ export function CartProvider({ children }) {
     }
   }, [cart.length]);
 
+  // Синхронизация с сервером
   const syncWithServer = async (updatedCart) => {
     try {
-      await axios.put('/api/cart', { items: updatedCart });
+      await axios.put('http://localhost:5000/api/cart', 
+        { 
+          items: updatedCart.map(item => ({
+            id: item.id, // Отправляем только ID!
+            quantity: item.quantity
+          }))
+        },
+        {
+          headers: cartId ? { 'x-cart-id': cartId } : {}
+        }
+      );
     } catch (err) {
       console.error('Ошибка синхронизации корзины:', err);
       throw err;
     }
   };
 
+  // Добавление товара
   const addToCart = async (product) => {
     try {
-      const updatedCart = [...cart];
-      const existingItem = updatedCart.find(item => item.id === product.id);
-      
-      if (existingItem) {
-        existingItem.quantity += 1;
-      } else {
-        updatedCart.push({ ...product, quantity: 1 });
-      }
+      const existingItem = cart.find(item => item.id === product._id);
+      const updatedCart = existingItem
+        ? cart.map(item => 
+            item.id === product.id 
+              ? { ...item, quantity: item.quantity + 1 } 
+              : item
+          )
+        : [...cart, { 
+            id: product._id, 
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            quantity: 1 
+          }];
 
       setCart(updatedCart);
       await syncWithServer(updatedCart);
     } catch (err) {
       console.error('Ошибка добавления в корзину:', err);
-      await fetchCart(); // Восстанавливаем актуальное состояние
+      await fetchCart();
       throw err;
     }
   };
 
+  // Удаление товара
   const removeFromCart = async (productId) => {
     try {
       const updatedCart = cart.filter(item => item.id !== productId);
       setCart(updatedCart);
-      await axios.delete(`/api/cart/${productId}`);
+      await axios.delete(`http://localhost:5000/api/cart/${productId}`, {
+        headers: cartId ? { 'x-cart-id': cartId } : {}
+      });
     } catch (err) {
       console.error('Ошибка удаления из корзины:', err);
       await fetchCart();
@@ -79,8 +107,9 @@ export function CartProvider({ children }) {
     }
   };
 
+  // Обновление количества
   const updateQuantity = async (productId, quantity) => {
-    if (quantity < 1) return;
+    if (quantity < 1) return removeFromCart(productId);
     
     try {
       const updatedCart = cart.map(item => 
@@ -88,7 +117,7 @@ export function CartProvider({ children }) {
       );
       
       setCart(updatedCart);
-      await axios.put(`/api/cart/${productId}`, { quantity });
+      await syncWithServer(updatedCart);
     } catch (err) {
       console.error('Ошибка обновления количества:', err);
       await fetchCart();
@@ -96,9 +125,12 @@ export function CartProvider({ children }) {
     }
   };
 
+  // Очистка корзины
   const clearCart = async () => {
     try {
-      await axios.delete('/api/cart/clear');
+      await axios.delete('http://localhost:5000/api/cart/clear', {
+        headers: cartId ? { 'x-cart-id': cartId } : {}
+      });
       setCart([]);
     } catch (err) {
       console.error('Ошибка очистки корзины:', err);
@@ -106,6 +138,7 @@ export function CartProvider({ children }) {
     }
   };
 
+  // Вычисляемые значения
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 

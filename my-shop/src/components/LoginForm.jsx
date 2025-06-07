@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Header } from '../components/Header/Header';
 import './AuthForms.css';
 
 export function LoginForm() {
@@ -29,29 +30,38 @@ export function LoginForm() {
   };
 
   return (
-    <div className="auth-form">
-      <h2>Вход</h2>
-      {error && <p className="error">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Пароль"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Войти</button>
-      </form>
-      <p>
-        Нет аккаунта? <a href="/register">Зарегистрируйтесь</a>
-      </p>
-    </div>
+    <>
+      <Header />
+      <div className="auth-page">
+        <div className="auth-form-container">
+          <div className="auth-form">
+            <h2>Вход</h2>
+            {error && <p className="error">{error}</p>}
+            <form onSubmit={handleSubmit}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Пароль"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button type="submit" className="auth-button">
+                Войти
+              </button>
+            </form>
+            <p className="auth-link">
+              Нет аккаунта? <a href="/register">Зарегистрируйтесь</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
