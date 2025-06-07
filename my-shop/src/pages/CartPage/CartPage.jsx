@@ -1,39 +1,73 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '../../components/Header/Header';
 import './CartPage.css';
 
 export function CartPage() {
+  const navigate = useNavigate();
   const location = useLocation();
   const { 
     cart, 
+    isLoading, 
+    error,
     removeFromCart, 
     updateQuantity, 
     total, 
     clearCart,
-    bounce
+    bounce,
+    fetchCart
   } = useCart();
   
   const [isOrderSuccess, setIsOrderSuccess] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [orderNumber, setOrderNumber] = useState(null);
+  const [localError, setLocalError] = useState(null);
 
   useEffect(() => {
     document.title = "Корзина | YG Bikes";
-  }, [location]);
+    if (error) setLocalError(error);
+  }, [location, error]);
 
   const handleCheckout = async () => {
     setIsProcessing(true);
-    // Здесь будет реальный запрос к API
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Имитация задержки
-    setIsOrderSuccess(true);
-    clearCart();
-    setIsProcessing(false);
+    setLocalError(null);
+    
+    try {
+      const response = await axios.post('/api/orders', {
+        items: cart.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalAmount: total
+      });
+
+      await clearCart();
+      setOrderNumber(response.data.orderNumber);
+      setIsOrderSuccess(true);
+    } catch (err) {
+      console.error('Ошибка оформления заказа:', err);
+      setLocalError(err.response?.data?.message || 'Ошибка при оформлении заказа');
+      await fetchCart();
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const closeModal = () => {
     setIsOrderSuccess(false);
+    navigate('/account/orders');
   };
+
+  if (isLoading) {
+    return (
+      <div className="cart-page">
+        <Header />
+        <div className="cart-loading">Загрузка корзины...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -41,9 +75,16 @@ export function CartPage() {
       <div className="cart-page">
         <h1 className="cart-title">Корзина</h1>
         
+        {localError && (
+          <div className="cart-error">
+            {localError}
+            <button onClick={() => setLocalError(null)}>×</button>
+          </div>
+        )}
+        
         {cart.length === 0 ? (
           <div className="cart-empty">
-            <p>Ваша корзина пуста</p>
+            <p>{isOrderSuccess ? 'Заказ успешно оформлен!' : 'Ваша корзина пуста'}</p>
             <NavLink to="/" className="cart-continue-shopping">
               Вернуться к покупкам
             </NavLink>
@@ -52,54 +93,33 @@ export function CartPage() {
           <>
             <div className="cart-items">
               {cart.map(item => (
-                <div key={item.id} className="cart-item">
-                  <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    className="cart-item-image" 
-                  />
+                <div key={`${item.id}-${item.quantity}`} className="cart-item">
+                  <img src={item.image} alt={item.name} className="cart-item-image" />
                   <div className="cart-item-details">
-                    <div>
-                      <h3 className="cart-item-name">{item.name}</h3>
-                      <p className="cart-item-specs">{item.specs}</p>
-                      <p className="cart-item-price">
-                        {item.price.toLocaleString()} ₽ × {item.quantity} = 
-                        <span className="item-total">
-                          {(item.price * item.quantity).toLocaleString()} ₽
-                        </span>
-                      </p>
-                    </div>
+                    <h3 className="cart-item-name">{item.name}</h3>
+                    <p className="cart-item-specs">{item.specs}</p>
+                    <p className="cart-item-price">
+                      {item.price.toLocaleString()} ₽ × {item.quantity} = 
+                      <span className="item-total">
+                        {(item.price * item.quantity).toLocaleString()} ₽
+                      </span>
+                    </p>
                     <div className="cart-item-controls">
                       <div className="quantity-control">
                         <button 
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           disabled={item.quantity <= 1}
-                          className="quantity-btn"
                         >
                           −
                         </button>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            if (!isNaN(value)) {
-                              updateQuantity(item.id, value);
-                            }
-                          }}
-                          className="cart-item-quantity"
-                        />
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="quantity-btn"
-                        >
+                        <span className="quantity-value">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
                           +
                         </button>
                       </div>
                       <button 
                         onClick={() => removeFromCart(item.id)}
-                        className="cart-item-remove"
+                        className="remove-button"
                       >
                         Удалить
                       </button>
@@ -115,11 +135,11 @@ export function CartPage() {
                 <span>{total.toLocaleString()} ₽</span>
               </div>
               <button 
-                className={`checkout-button ${bounce ? 'bounce-effect' : ''}`}
                 onClick={handleCheckout}
                 disabled={isProcessing}
+                className={`checkout-button ${bounce ? 'bounce-effect' : ''}`}
               >
-                {isProcessing ? 'Оформляем заказ...' : 'Оформить заказ'}
+                {isProcessing ? 'Оформление...' : 'Оформить заказ'}
               </button>
             </div>
           </>
@@ -129,24 +149,12 @@ export function CartPage() {
           <div className="modal-overlay">
             <div className="order-success-modal">
               <div className="success-icon">✓</div>
-              <h2>Заказ успешно оформлен!</h2>
-              <p>Спасибо за покупку в YG Bikes!</p>
-              <p>Номер вашего заказа: #{Math.floor(Math.random() * 1000000)}</p>
+              <h2>Заказ оформлен!</h2>
+              <p>Номер заказа: #{orderNumber}</p>
               <div className="modal-actions">
-                <NavLink 
-                  to="/" 
-                  className="modal-button"
-                  onClick={closeModal}
-                >
-                  Вернуться в магазин
-                </NavLink>
-                <NavLink 
-                  to="/account/orders" 
-                  className="modal-button primary"
-                  onClick={closeModal}
-                >
-                  Мои заказы
-                </NavLink>
+                <button onClick={closeModal} className="modal-button">
+                  Закрыть
+                </button>
               </div>
             </div>
           </div>
